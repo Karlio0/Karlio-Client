@@ -1,1 +1,59 @@
+package com.example.mymod;
 
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+// The value here should match an entry in the META-INF/mods.toml file
+@Mod(MyMod.MODID)
+public class MyMod {
+    public static final String MODID = "mymod";
+
+    // Directly reference a log4j logger.
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    public MyMod() {
+        // Register the setup method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+
+        // Register the doClientStuff method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+
+        // Register ourselves for server and other game events we are interested in
+        MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    private void setup(final FMLCommonSetupEvent event) {
+        // some preinit code
+        LOGGER.info("HELLO FROM PREINIT");
+        LOGGER.info("DIRT BLOCK >> {}", net.minecraft.block.Blocks.DIRT.getRegistryName());
+    }
+
+    private void doClientStuff(final FMLClientSetupEvent event) {
+        // some client setup code
+        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+    }
+
+    // You can use SubscribeEvent and let the Event Bus discover methods to call
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        event.getPlayer().sendMessage(new StringTextComponent("Welcome to the server!"), event.getPlayer().getUUID());
+    }
+
+    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class RegistryEvents {
+        @SubscribeEvent
+        public static void onServerStarting(FMLServerStartingEvent event) {
+            // do something when the server starts
+            LOGGER.info("HELLO from server starting");
+        }
+    }
+}
